@@ -1,0 +1,35 @@
+{
+  "name": "rwa-oracle-backend",
+  "version": "1.0.0",
+  "description": "AI Oracle Backend for RWA on Mantle",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "node src/test-agents.js",
+    "check": "node src/check-setup.js"
+  },
+  "keywords": [
+    "oracle",
+    "blockchain",
+    "ai",
+    "mantle"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.5",
+    "form-data": "^4.0.5",
+    "pdf-parse": "^2.4.5",
+    "tesseract.js": "^7.0.0",
+    "viem": "^2.21.54",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

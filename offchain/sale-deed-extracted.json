@@ -1,0 +1,19 @@
+{
+  "document_type": "Sale Deed",
+  "extraction_method": "OCR.space API",
+  "extracted_text": "DEED OF SALE\t\r\nThis Deed of Sale made on this 15th day of January 2026\t\r\nBETWEEN\t\r\nSELLER:\t\r\nRamesh Kumar, Son of Suresh Kumar, aged about 45 years,\t\r\nCaste: General, Religion: Hindu,\t\r\nOccupation: Business, PAN: ABCDE1234F\t\r\nAddress: No. 24, MG Road, Bengaluru - 560001\t\r\nAND\t\r\nPURCHASER:\t\r\nSuganthan R, Son of Ravichandran, aged about 22 years,\t\r\nCaste: General, Religion: Hindu,\t\r\nOccupation: Student / Developer, PAN: ABCDE5678G\t\r\nAddress: VIT Hostel, Vellore - 632014\t\r\nCONSIDERATION\t\r\nRs. 25,00,000 (Rupees Twenty Five Lakhs only)\t\r\nMODE OF PAYMENT\t\r\nCheque No. 123456 dated 10/01/2026 drawn on State Bank of India\t\r\nPROPERTY DETAILS\t\r\nVacant Land situated at Katpadi, Vellore District, Tamil Nadu - 632014\t\r\nRS Plot No: 112 | LR Plot No: 215\t\r\nTotal Area: 2400 Sq.ft\t\r\nBOUNDARIES\t\r\nNorth: Vacant Land\t\r\nSouth: 20 ft Road\t\r\nEast: Plot No. 113\t\r\nWest: Plot No. 111\t\r\nTITLE DETAILS\t\r\nMode of Acquisition: Purchase\t\r\nPrevious Sale Deed dated 12/08/2010 registered as Document No. 4567 of 2010\t\r\nSub-Registrar Office: Katpadi, Vellore District\t\r\nRECEIPT CLAUSE\t\r\nThe Seller hereby acknowledges receipt of full consideration amount on 15/01/2026 at 11:30 AM.\t\r\nIN WITNESS WHEREOF, the parties have signed this deed on the date first mentioned above.\t\r\nSELLER SIGNATURE: Ramesh Kumar\t\r\nDate: 15/01/2026\t\r\nPURCHASER SIGNATURE: Suganthan R\t\r\nDate: 15/01/2026\t\r\nWITNESSES\t\r\n1. Arun Kumar\t\r\n2. Manoj Kumar\t\r\n\n",
+  "metadata": {
+    "pages": 1,
+    "total_characters": 1405,
+    "processing_time": "953ms"
+  },
+  "parties": {
+    "seller": "Ramesh Kumar, Son of Suresh Kumar, aged about 45 years,",
+    "buyer": "Suganthan R, Son of Ravichandran, aged about 22 years,"
+  },
+  "property_details": {
+    "survey_number": "112 | LR Plot No: 215",
+    "area": "2400 Sq.ft",
+    "consideration": "25,00,000"
+  }
+}
