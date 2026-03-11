@@ -1,0 +1,6 @@
+# Minimal dependencies for satellite imagery testing
+# Only what's needed - no heavy geemap package
+
+earthengine-api>=0.1.384
+requests>=2.31.0
+Pillow>=10.0.0
