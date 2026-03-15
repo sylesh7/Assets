@@ -235,25 +235,31 @@ contract RWAAssetManager is ZamaEthereumConfig {
     
     /**
      * @notice Register new asset with ENCRYPTED valuation
-     * @dev Called by OracleCore after consensus
+     * @dev Called by OracleCore after consensus - uses proper FHEVM pattern
      */
     function registerAsset(
         uint256 _requestId,
         address _owner,
         AssetType _assetType,
         string memory _location,
-        euint64 _encryptedValuation,
-        euint32 _encryptedConfidence,
+        externalEuint64 _encryptedValuation,
+        bytes calldata _valuationProof,
+        externalEuint32 _encryptedConfidence,
+        bytes calldata _confidenceProof,
         bytes32 _evidenceHash
     ) external onlyOracleCore returns (uint256) {
         require(_owner != address(0), "Invalid owner");
         require(requestToAsset[_requestId] == 0, "Request already registered");
         
+        // Convert external encrypted values to internal euint types
+        euint64 encryptedValuation = FHE.fromExternal(_encryptedValuation, _valuationProof);
+        euint32 encryptedConfidence = FHE.fromExternal(_encryptedConfidence, _confidenceProof);
+        
         uint256 assetId = ++assetCounter;
         
         // Allow this contract to use encrypted values
-        FHE.allowThis(_encryptedValuation);
-        FHE.allowThis(_encryptedConfidence);
+        FHE.allowThis(encryptedValuation);
+        FHE.allowThis(encryptedConfidence);
         
         Asset storage asset = assets[assetId];
         asset.assetId = assetId;
@@ -261,8 +267,8 @@ contract RWAAssetManager is ZamaEthereumConfig {
         asset.owner = _owner;
         asset.assetType = _assetType;
         asset.location = _location;
-        asset.encryptedValuation = _encryptedValuation;    // 🔐 Store encrypted
-        asset.encryptedConfidence = _encryptedConfidence;  // 🔐 Store encrypted
+        asset.encryptedValuation = encryptedValuation;    // 🔐 Store encrypted
+        asset.encryptedConfidence = encryptedConfidence;  // 🔐 Store encrypted
         asset.evidenceHash = _evidenceHash;
         asset.createdAt = block.timestamp;
         asset.lastUpdated = block.timestamp;
@@ -272,7 +278,7 @@ contract RWAAssetManager is ZamaEthereumConfig {
         requestToAsset[_requestId] = assetId;
         
         // Create token for this asset
-        address tokenAddress = _createToken(assetId, _owner, _encryptedValuation);
+        address tokenAddress = _createToken(assetId, _owner, encryptedValuation);
         asset.tokenAddress = tokenAddress;
         tokenToAsset[tokenAddress] = assetId;
         
@@ -283,21 +289,28 @@ contract RWAAssetManager is ZamaEthereumConfig {
     
     /**
      * @notice Update asset valuation (re-valuation)
+     * @dev Uses proper FHEVM pattern with proofs
      */
     function updateValuation(
         uint256 _assetId,
-        euint64 _newEncryptedValuation,
-        euint32 _newEncryptedConfidence,
+        externalEuint64 _newEncryptedValuation,
+        bytes calldata _valuationProof,
+        externalEuint32 _newEncryptedConfidence,
+        bytes calldata _confidenceProof,
         bytes32 _evidenceHash
     ) external onlyOracleCore {
         require(assets[_assetId].assetId != 0, "Asset not found");
         
-        FHE.allowThis(_newEncryptedValuation);
-        FHE.allowThis(_newEncryptedConfidence);
+        // Convert external encrypted values to internal euint types
+        euint64 encryptedValuation = FHE.fromExternal(_newEncryptedValuation, _valuationProof);
+        euint32 encryptedConfidence = FHE.fromExternal(_newEncryptedConfidence, _confidenceProof);
+        
+        FHE.allowThis(encryptedValuation);
+        FHE.allowThis(encryptedConfidence);
         
         Asset storage asset = assets[_assetId];
-        asset.encryptedValuation = _newEncryptedValuation;
-        asset.encryptedConfidence = _newEncryptedConfidence;
+        asset.encryptedValuation = encryptedValuation;
+        asset.encryptedConfidence = encryptedConfidence;
         asset.evidenceHash = _evidenceHash;
         asset.lastUpdated = block.timestamp;
         
