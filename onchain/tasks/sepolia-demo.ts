@@ -1,4 +1,5 @@
 import { task } from "hardhat/config";
+import { RWAAssetManager } from "../types/contracts";
 
 task("test-sepolia-transactions", "Makes real transactions on Sepolia to demonstrate contract")
   .setAction(async (taskArgs, hre) => {
@@ -25,9 +26,11 @@ task("test-sepolia-transactions", "Makes real transactions on Sepolia to demonst
 
     console.log(`\n✅ RWAAssetManager: ${assetManagerAddress}`);
 
-    // Get contract instance
-    const RWAAssetManager = await hre.ethers.getContractFactory("RWAAssetManager");
-    const assetManager = RWAAssetManager.attach(assetManagerAddress);
+    // Get contract instance with proper typing
+    const assetManager = await hre.ethers.getContractAt(
+      "RWAAssetManager",
+      assetManagerAddress
+    ) as RWAAssetManager;
 
     console.log("\n🚀 Making real Sepolia transactions...\n");
 
