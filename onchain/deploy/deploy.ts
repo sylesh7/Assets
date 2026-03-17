@@ -26,8 +26,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   console.log(`RWAAssetManager contract: `, deployedRWAAssetManager.address);
+
+  const deployedRWASealedBidAuction = await deploy("RWASealedBidAuction", {
+    from: deployer,
+    args: [deployedRWAAssetManager.address],
+    log: true,
+  });
+
+  console.log(`RWASealedBidAuction contract: `, deployedRWASealedBidAuction.address);
 };
 
 export default func;
-func.id = "deploy_rwaAssetManager"; // id required to prevent reexecution
-func.tags = ["RWAAssetManager"];
+func.id = "deploy_rwaAuction"; // id required to prevent reexecution
+func.tags = ["RWAAuction"];
