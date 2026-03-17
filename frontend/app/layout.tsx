@@ -20,13 +20,13 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Prop99 - RWA Oracle Intelligence Layer",
   description:
-    "Real-World Asset Oracle Intelligence Layer on Mantle. AI-powered property verification with blockchain security.",
-  keywords: "RWA, Real World Assets, Oracle, Mantle, blockchain, AI verification, property tokenization",
+    "Real-World Asset Oracle Intelligence Layer on Ethereum Sepolia with FHEVM Encryption. AI-powered property verification with blockchain security.",
+  keywords: "RWA, Real World Assets, Oracle, Ethereum, Sepolia, FHEVM, blockchain, AI verification, property tokenization",
   authors: [{ name: "Prop99" }],
   robots: "index, follow",
   openGraph: {
     title: "Prop99 - RWA Oracle Intelligence Layer",
-    description: "Real-World Asset Oracle Intelligence Layer on Mantle",
+    description: "Real-World Asset Oracle Intelligence Layer on Ethereum Sepolia with FHEVM Encryption",
     type: "website",
     locale: "en_US",
     siteName: "Prop99",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Prop99 - RWA Oracle Intelligence Layer",
-    description: "Real-World Asset Oracle Intelligence Layer on Mantle",
+    description: "Real-World Asset Oracle Intelligence Layer on Ethereum Sepolia with FHEVM Encryption",
   },
   manifest: "/manifest.json",
   generator: 'v0.app'

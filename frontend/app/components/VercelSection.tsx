@@ -28,10 +28,10 @@ export default function VercelSection() {
       icon: Zap,
     },
     {
-      title: "MANTLE DA STORAGE",
-      description: "Efficient data availability layer storing satellite imagery and analysis reports with cost optimization",
+      title: "FHEVM ENCRYPTED STATE",
+      description: "Fully Homomorphic Encryption for private on-chain computation with confidential asset valuations",
       status: "DEPLOYED",
-      metrics: { cost: "100x cheaper", storage: "Unlimited", retrieval: "Instant", compression: "Multi-format" },
+      metrics: { encryption: "Post-quantum", computation: "On-chain", privacy: "Complete", overhead: "Optimized" },
       icon: Zap,
     },
     {
@@ -93,7 +93,7 @@ export default function VercelSection() {
           <h2 className="text-5xl font-light tracking-wider mb-6 font-mono">BLOCKCHAIN INFRASTRUCTURE</h2>
           <div className="w-32 h-px bg-white mx-auto mb-8"></div>
           <p className="text-gray-400 max-w-3xl mx-auto text-lg">
-            Multi-layer architecture with Ethereum L1 finality, Mantle L2 execution, and rollup anchoring
+            Multi-layer architecture with Ethereum L1 finality, FHEVM encryption, and confidential computation
           </p>
         </div>
 

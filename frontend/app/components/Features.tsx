@@ -13,7 +13,7 @@ export default function Features() {
       description:
         "AI-powered real-world asset verification through satellite imagery analysis with multi-oracle consensus validation and cryptographic proof anchoring to Ethereum",
       code: "VERIFY_001",
-      metrics: { consensus: "2-of-3", accuracy: "99.8%", anchoring: "Ethereum L1", storage: "Mantle DA" },
+      metrics: { consensus: "2-of-3", accuracy: "99.8%", anchoring: "Ethereum L1", storage: "FHEVM Encrypted" },
       status: "ACTIVE",
       icon: Search,
       schematic: (
@@ -46,9 +46,9 @@ export default function Features() {
     {
       title: "RWA TOKENIZATION",
       description:
-        "Automatic ERC-20 token generation for verified assets with compliance controls, transfer restrictions, and KYC whitelisting on Mantle blockchain",
+        "Automatic ERC-20 token generation for verified assets with compliance controls, transfer restrictions, and KYC whitelisting on Ethereum Sepolia with FHEVM encryption",
       code: "TOKEN_003",
-      metrics: { standard: "ERC-20", deployment: "Instant", compliance: "KYC-ready", chain: "Mantle" },
+      metrics: { standard: "ERC-20", deployment: "Instant", compliance: "KYC-ready", chain: "Sepolia" },
       status: "READY",
       icon: QrCode,
       schematic: (

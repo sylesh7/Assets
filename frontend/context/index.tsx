@@ -2,7 +2,7 @@
 
 import { wagmiAdapter, projectId } from '@/config'
 import { createAppKit } from '@reown/appkit/react' 
-import { mantle, mantleSepoliaTestnet } from '@reown/appkit/networks'
+import { sepolia } from '@reown/appkit/networks'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React, { type ReactNode } from 'react'
@@ -18,7 +18,7 @@ if (!projectId) {
 // Set up metadata
 const metadata = {
   name: "Prop99 - RWA Oracle",
-  description: "Real-World Asset Oracle Intelligence Layer on Mantle",
+  description: "Real-World Asset Oracle Intelligence Layer with FHEVM Encryption on Ethereum Sepolia",
   url: "https://prop99.com",
   icons: ["https://avatars.githubusercontent.com/u/179229932"]
 }
@@ -27,7 +27,7 @@ const metadata = {
 const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
-  networks: [mantle, mantleSepoliaTestnet],
+  networks: [sepolia],
   metadata: metadata,
   features: {
     analytics: true,

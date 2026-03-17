@@ -159,7 +159,7 @@ export default function BuyPage() {
             <div className="absolute left-0 top-0 h-full bg-black animate-pulse" style={{ width: "100%" }}></div>
           </div>
           <p className="text-gray-600 font-mono text-sm">
-            Browse verified real-world assets tokenized on Mantle Network
+            Browse verified real-world assets tokenized on Ethereum Sepolia with FHEVM Encryption
           </p>
         </div>
 
