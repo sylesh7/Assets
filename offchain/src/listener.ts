@@ -213,6 +213,23 @@ async function handleVerificationRequest(log: Log) {
   try {
     const { args } = log as any;
     
+    // Fetch full request data from contract (includes ipfsHashes)
+    const requestId = args.requestId;
+    let requestData: any;
+    try {
+      requestData = await publicClient.readContract({
+        address: ORACLE_CORE_ADDRESS,
+        abi: ORACLE_CORE_ABI,
+        functionName: 'getRequest',
+        args: [requestId]
+      });
+    } catch (error) {
+      logger.warn(`⚠️  Could not fetch request data from contract: ${error}`);
+      requestData = { ipfsHashes: [] };
+    }
+    
+    const ipfsHashes = requestData.ipfsHashes || [];
+    
     // Parse location string to extract latitude and longitude
     // Expected format: "address | lat,lng" or "lat,lng"
     const location = args.location.trim();
@@ -240,7 +257,7 @@ async function handleVerificationRequest(log: Log) {
     logger.info(`🏠 Asset Type: ${args.assetType}`);
     logger.info(`📍 Location: ${args.location}`);
     logger.info(`   Parsed Coordinates: ${latitude}, ${longitude}`);
-    logger.info(`📄 Documents: ${args.ipfsHashes.length} files`);
+    logger.info(`📄 Documents: ${ipfsHashes.length} files`);
     logger.info(`⏰ Timestamp: ${new Date(Number(args.timestamp) * 1000).toISOString()}`);
     logger.info(`📦 Block: ${log.blockNumber}`);
     logger.info('═══════════════════════════════════════════════════════════════\n');
@@ -258,7 +275,7 @@ async function handleVerificationRequest(log: Log) {
       assetType: args.assetType,
       latitude,
       longitude,
-      documentHashes: args.ipfsHashes,
+      documentHashes: ipfsHashes,
       blockNumber: log.blockNumber!,
       transactionHash: log.transactionHash!
     });
