@@ -709,8 +709,8 @@ export async function processVerificationRequest(request: VerificationRequest) {
     
     // Check if request is still pending before submission
     try {
-      const ORACLE_ROUTER_ADDRESS = process.env.ORACLE_ROUTER_ADDRESS as `0x${string}`;
-      const ORACLE_ROUTER_ABI = [
+      const RWA_ORACLE_CORE_ADDRESS = process.env.RWA_ORACLE_CORE_ADDRESS || '0xBA2651f23d7f2Fd5D8238e320B0b9Be2BBF54991';
+      const ORACLE_CORE_ABI = [
         {
           inputs: [{ name: '_requestId', type: 'uint256' }],
           name: 'getRequest',
@@ -736,8 +736,8 @@ export async function processVerificationRequest(request: VerificationRequest) {
       ] as const;
 
       const requestData = await publicClient.readContract({
-        address: ORACLE_ROUTER_ADDRESS,
-        abi: ORACLE_ROUTER_ABI,
+        address: RWA_ORACLE_CORE_ADDRESS as `0x${string}`,
+        abi: ORACLE_CORE_ABI,
         functionName: 'getRequest',
         args: [BigInt(request.requestId)]
       });

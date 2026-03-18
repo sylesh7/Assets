@@ -1,10 +1,10 @@
 /**
  * Blockchain Submitter
- * Submits verification results back to smart contract
+ * Submits verification results back to smart contract on Ethereum Sepolia
  */
-import { createWalletClient, http, parseEther, defineChain, createPublicClient } from 'viem';
+import { createWalletClient, http, parseEther, createPublicClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { mantle } from 'viem/chains';
+import { sepolia } from 'viem/chains';
 import { logger } from './utils/logger';
 import axios from 'axios';
 import dotenv from 'dotenv';
@@ -13,14 +13,20 @@ import path from 'path';
 
 dotenv.config();
 
-const ORACLE_ROUTER_ADDRESS = process.env.ORACLE_ROUTER_ADDRESS as `0x${string}`;
-const CONSENSUS_ENGINE_ADDRESS = process.env.CONSENSUS_ENGINE_ADDRESS as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`;
-const VERIFICATION_ANCHOR_ADDRESS = process.env.VERIFICATION_ANCHOR_ADDRESS as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`;
-const ORACLE_PRIVATE_KEY = (process.env.ORACLE_PRIVATE_KEY?.trim().startsWith('0x') 
-  ? process.env.ORACLE_PRIVATE_KEY.trim() 
-  : `0x${process.env.ORACLE_PRIVATE_KEY?.trim()}`) as `0x${string}`;
-const IS_TESTNET = process.env.NODE_ENV !== 'production';
-const RPC_URL = IS_TESTNET ? process.env.MANTLE_TESTNET_RPC_URL : process.env.MANTLE_RPC_URL;
+const RWA_ORACLE_CORE_ADDRESS = process.env.RWA_ORACLE_CORE_ADDRESS as `0x${string}` || '0xBA2651f23d7f2Fd5D8238e320B0b9Be2BBF54991' as `0x${string}`;
+const RWA_ASSET_MANAGER_ADDRESS = process.env.RWA_ASSET_MANAGER_ADDRESS as `0x${string}` || '0x4E4e9D454783178fb4F9EF3D8c724c7Da73405Af' as `0x${string}`;
+
+// Handle private key with proper validation
+const privateKeyEnv = process.env.ORACLE_PRIVATE_KEY;
+if (!privateKeyEnv) {
+  throw new Error('ORACLE_PRIVATE_KEY environment variable is not set');
+}
+
+const ORACLE_PRIVATE_KEY = (privateKeyEnv.trim().startsWith('0x') 
+  ? privateKeyEnv.trim() 
+  : `0x${privateKeyEnv.trim()}`) as `0x${string}`;
+
+const RPC_URL = process.env.ETH_SEPOLIA_RPC_URL || 'https://sepolia.infura.io/v3/';
 const PINATA_JWT = process.env.PINATA_JWT;
 
 // Evidence mapping file path
@@ -62,48 +68,24 @@ function getAgentModelName(agentName: string): string {
   return modelMap[agentName] || agentName;
 }
 
-// Define Mantle Sepolia Testnet
-const mantleSepolia = defineChain({
-  id: 5003,
-  name: 'Mantle Sepolia Testnet',
-  network: 'mantle-sepolia',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'MNT',
-    symbol: 'MNT',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.sepolia.mantle.xyz'],
-    },
-    public: {
-      http: ['https://rpc.sepolia.mantle.xyz'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Explorer', url: 'https://explorer.sepolia.mantle.xyz' },
-  },
-  testnet: true,
-});
-
-// Create wallet client
+// Create wallet client using Ethereum Sepolia
 const account = privateKeyToAccount(ORACLE_PRIVATE_KEY);
 const walletClient = createWalletClient({
   account,
-  chain: IS_TESTNET ? mantleSepolia : mantle,
+  chain: sepolia,
   transport: http(RPC_URL)
 });
 
 // Create public client for reading chain data
 const publicClient = createPublicClient({
-  chain: IS_TESTNET ? mantleSepolia : mantle,
+  chain: sepolia,
   transport: http(RPC_URL)
 });
 
 export { publicClient };
 
-// Contract ABI - OracleRouter.sol
-const ORACLE_ROUTER_ABI = [
+// Contract ABI - RWAOracleCore.sol
+const ORACLE_CORE_ABI = [
   {
     inputs: [
       { name: '_requestId', type: 'uint256' },
@@ -172,8 +154,8 @@ export async function submitRejection(
     // Submit as verification with 0 valuation and 1% confidence (indicates rejection)
     // Contract requires confidence > 0, so we use 1 (minimum) to indicate rejection
     const hash = await walletClient.writeContract({
-      address: ORACLE_ROUTER_ADDRESS,
-      abi: ORACLE_ROUTER_ABI,
+      address: RWA_ORACLE_CORE_ADDRESS,
+      abi: ORACLE_CORE_ABI,
       functionName: 'submitVerification',
       args: [
         BigInt(requestId),
@@ -249,8 +231,8 @@ export async function submitVerification(
     logger.info(`   🔢 Using nonce: ${nonce}`);
 
     const hash = await walletClient.writeContract({
-      address: ORACLE_ROUTER_ADDRESS,
-      abi: ORACLE_ROUTER_ABI,
+      address: RWA_ORACLE_CORE_ADDRESS,
+      abi: ORACLE_CORE_ABI,
       functionName: 'submitVerification',
       args: [
         BigInt(requestId),

@@ -1,10 +1,10 @@
 /**
  * Tokenization Service
- * Handles automatic ERC-20 token creation for verified assets
- * Works with RWATokenFactory to create and register tokens
+ * Handles automatic ERC-20 token creation for verified assets on Ethereum Sepolia
  */
 
-import { createWalletClient, createPublicClient, http, defineChain } from 'viem';
+import { createWalletClient, createPublicClient, http } from 'viem';
+import { sepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { logger } from '../utils/logger';
 import * as fs from 'fs';
@@ -12,30 +12,6 @@ import * as path from 'path';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-// Define Mantle Sepolia Testnet
-const mantleSepolia = defineChain({
-  id: 5003,
-  name: 'Mantle Sepolia Testnet',
-  network: 'mantle-sepolia',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'MNT',
-    symbol: 'MNT',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.sepolia.mantle.xyz'],
-    },
-    public: {
-      http: ['https://rpc.sepolia.mantle.xyz'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Explorer', url: 'https://explorer.sepolia.mantle.xyz' },
-  },
-  testnet: true,
-});
 
 // Load contract artifacts
 const RWATokenFactoryArtifact = JSON.parse(
@@ -93,37 +69,47 @@ if (!ASSET_REGISTRY_ADDRESS || !ASSET_REGISTRY_ADDRESS.match(/^0x[a-fA-F0-9]{40}
 }
 
 // Get oracle account from environment (this is the contract owner for RWATokenFactory)
-const ORACLE_PRIVATE_KEY = (process.env.ORACLE_PRIVATE_KEY?.trim().startsWith('0x')
-  ? process.env.ORACLE_PRIVATE_KEY.trim()
-  : `0x${process.env.ORACLE_PRIVATE_KEY?.trim()}`) as `0x${string}`;
+const privateKeyEnv = process.env.ORACLE_PRIVATE_KEY;
+if (!privateKeyEnv) {
+  throw new Error('ORACLE_PRIVATE_KEY environment variable is not set');
+}
+
+const ORACLE_PRIVATE_KEY = (privateKeyEnv.trim().startsWith('0x')
+  ? privateKeyEnv.trim()
+  : `0x${privateKeyEnv.trim()}`) as `0x${string}`;
 
 const oracleAccount = privateKeyToAccount(ORACLE_PRIVATE_KEY);
 
 // Get owner account from environment (for minting tokens)
-const OWNER_PRIVATE_KEY = (process.env.OWNER_PRIVATE_KEY?.trim().startsWith('0x')
-  ? process.env.OWNER_PRIVATE_KEY.trim()
-  : `0x${process.env.OWNER_PRIVATE_KEY?.trim()}`) as `0x${string}`;
+const ownerPrivateKeyEnv = process.env.OWNER_PRIVATE_KEY;
+if (!ownerPrivateKeyEnv) {
+  throw new Error('OWNER_PRIVATE_KEY environment variable is not set');
+}
+
+const OWNER_PRIVATE_KEY = (ownerPrivateKeyEnv.trim().startsWith('0x')
+  ? ownerPrivateKeyEnv.trim()
+  : `0x${ownerPrivateKeyEnv.trim()}`) as `0x${string}`;
 
 const ownerAccount = privateKeyToAccount(OWNER_PRIVATE_KEY);
 
-// Create clients - using Mantle Sepolia via environment variable or fallback
-const RPC_URL = process.env.MANTLE_TESTNET_RPC_URL || 'https://rpc.sepolia.mantle.xyz';
+// Create clients - using Ethereum Sepolia
+const RPC_URL = process.env.ETH_SEPOLIA_RPC_URL || 'https://sepolia.infura.io/v3/';
 
 const walletClient = createWalletClient({
   account: oracleAccount,
-  chain: mantleSepolia,
+  chain: sepolia,
   transport: http(RPC_URL),
 });
 
 // Separate wallet client for owner (for minting)
 const ownerWalletClient = createWalletClient({
   account: ownerAccount,
-  chain: mantleSepolia,
+  chain: sepolia,
   transport: http(RPC_URL),
 });
 
 const publicClient = createPublicClient({
-  chain: mantleSepolia,
+  chain: sepolia,
   transport: http(RPC_URL),
 });
 

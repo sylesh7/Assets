@@ -141,9 +141,9 @@ export default function ConsumerDashboard() {
     setMessage(null)
 
     try {
-      const ASSET_REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_ASSET_REGISTRY_ADDRESS as `0x${string}`
+      const ASSET_MANAGER_ADDRESS = process.env.NEXT_PUBLIC_RWA_ASSET_MANAGER_ADDRESS || '0x4E4e9D454783178fb4F9EF3D8c724c7Da73405Af'
 
-      if (!ASSET_REGISTRY_ADDRESS) {
+      if (!ASSET_MANAGER_ADDRESS) {
         throw new Error('Contract address not configured')
       }
 
@@ -153,7 +153,7 @@ export default function ConsumerDashboard() {
 
       // Call transferAsset function using the connected wallet (will trigger MetaMask)
       const hash = await walletClient.writeContract({
-        address: ASSET_REGISTRY_ADDRESS,
+        address: ASSET_MANAGER_ADDRESS as `0x${string}`,
         abi: ASSET_REGISTRY_ABI,
         functionName: 'transferAsset',
         args: [BigInt(assetId), address],

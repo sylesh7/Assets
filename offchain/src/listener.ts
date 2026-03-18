@@ -1,56 +1,36 @@
 /**
  * Oracle Listener
- * Monitors Mantle blockchain for VerificationRequested events
+ * Monitors Ethereum Sepolia blockchain for verification events
  */
 import { createPublicClient, http, parseAbiItem, Log, defineChain } from 'viem';
-import { mantle } from 'viem/chains';
+import { sepolia } from 'viem/chains';
 import { logger } from './utils/logger';
 import { processVerificationRequest } from './orchestrator';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ORACLE_ROUTER_ADDRESS = process.env.ORACLE_ROUTER_ADDRESS as `0x${string}`;
+const oracleCoreAddressEnv = process.env.RWA_ORACLE_CORE_ADDRESS;
+if (!oracleCoreAddressEnv) {
+  throw new Error('RWA_ORACLE_CORE_ADDRESS environment variable is not set. Set it to: 0xBA2651f23d7f2Fd5D8238e320B0b9Be2BBF54991');
+}
+const ORACLE_CORE_ADDRESS = oracleCoreAddressEnv as `0x${string}`;
 const IS_TESTNET = process.env.NODE_ENV !== 'production';
-const RPC_URL = IS_TESTNET ? process.env.MANTLE_TESTNET_RPC_URL : process.env.MANTLE_RPC_URL;
+const RPC_URL = process.env.ETH_SEPOLIA_RPC_URL || 'https://sepolia.infura.io/v3/';
 
-// Define Mantle Sepolia Testnet
-const mantleSepolia = defineChain({
-  id: 5003,
-  name: 'Mantle Sepolia Testnet',
-  network: 'mantle-sepolia',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'MNT',
-    symbol: 'MNT',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.sepolia.mantle.xyz'],
-    },
-    public: {
-      http: ['https://rpc.sepolia.mantle.xyz'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Explorer', url: 'https://explorer.sepolia.mantle.xyz' },
-  },
-  testnet: true,
-});
-
-// Create public client
+// Use Ethereum Sepolia
 const publicClient = createPublicClient({
-  chain: IS_TESTNET ? mantleSepolia : mantle,
+  chain: sepolia,
   transport: http(RPC_URL)
 });
 
-// Event ABI - matches OracleRouter.sol
+// Event ABI - matches RWAOracleCore.sol
 const VERIFICATION_REQUESTED_EVENT = parseAbiItem(
-  'event VerificationRequested(uint256 indexed requestId, address indexed owner, uint8 assetType, string location, string[] ipfsHashes, uint256 timestamp)'
+  'event VerificationRequested(uint256 indexed requestId, address indexed owner, uint8 assetType, string location, uint256 timestamp)'
 );
 
 // Contract ABI for reading request status
-const ORACLE_ROUTER_ABI = [
+const ORACLE_CORE_ABI = [
   {
     inputs: [{ name: '_requestId', type: 'uint256' }],
     name: 'getRequest',
@@ -80,9 +60,9 @@ const ORACLE_ROUTER_ABI = [
  */
 export async function startListener() {
   logger.info('🚀 Starting Oracle Listener...');
-  logger.info(`📡 Network: ${IS_TESTNET ? 'Mantle Sepolia Testnet' : 'Mantle Mainnet'}`);
+  logger.info(`📡 Network: Ethereum Sepolia Testnet`);
   logger.info(`🔗 RPC URL: ${RPC_URL}`);
-  logger.info(`📍 Oracle Router: ${ORACLE_ROUTER_ADDRESS}`);
+  logger.info(`📍 Oracle Core: ${ORACLE_CORE_ADDRESS}`);
   
   try {
     // Get current block number
@@ -107,7 +87,7 @@ export async function startListener() {
       
       try {
         const chunkLogs = await publicClient.getLogs({
-          address: ORACLE_ROUTER_ADDRESS,
+          address: ORACLE_CORE_ADDRESS,
           event: VERIFICATION_REQUESTED_EVENT,
           fromBlock: currentChunkStart,
           toBlock: currentChunkEnd
@@ -140,8 +120,8 @@ export async function startListener() {
         try {
           // Check request status from contract
           const request = await publicClient.readContract({
-            address: ORACLE_ROUTER_ADDRESS,
-            abi: ORACLE_ROUTER_ABI,
+            address: ORACLE_CORE_ADDRESS,
+            abi: ORACLE_CORE_ABI,
             functionName: 'getRequest',
             args: [requestId]
           });
@@ -168,7 +148,7 @@ export async function startListener() {
       }
     } else {
       logger.info('⚠️  No VerificationRequested events found.');
-      logger.info(`   Contract: ${ORACLE_ROUTER_ADDRESS}`);
+      logger.info(`   Contract: ${ORACLE_CORE_ADDRESS}`);
       logger.info(`   Scanned: Blocks ${fromBlock} to ${currentBlock}`);
       logger.info(`   Event Signature: VerificationRequested(uint256,address,uint8,string,string[],uint256)`);
       logger.info(`   Please verify:`);
@@ -179,7 +159,7 @@ export async function startListener() {
     
     // Watch for new events
     const unwatch = publicClient.watchEvent({
-      address: ORACLE_ROUTER_ADDRESS,
+      address: ORACLE_CORE_ADDRESS,
       event: VERIFICATION_REQUESTED_EVENT,
       onLogs: async (logs) => {
         for (const log of logs) {
@@ -189,8 +169,8 @@ export async function startListener() {
           
           try {
             const request = await publicClient.readContract({
-              address: ORACLE_ROUTER_ADDRESS,
-              abi: ORACLE_ROUTER_ABI,
+              address: ORACLE_CORE_ADDRESS,
+              abi: ORACLE_CORE_ABI,
               functionName: 'getRequest',
               args: [requestId]
             });
