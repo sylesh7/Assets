@@ -100,8 +100,8 @@ contract RWAOracleCore is ZamaEthereumConfig {
     // Configuration
     uint256 public verificationFee = 0.01 ether;
     uint256 public minConfidenceThreshold = 80; // Public threshold (80%)
-    uint256 public consensusThreshold = 2; // Need 2 out of 3 oracles
-    uint256 public minOracleStake = 1 ether;
+    uint256 public consensusThreshold = 1; // Single oracle for now
+    uint256 public minOracleStake = 0.05 ether;  // Reduced to 0.05 ETH for testing
     
     // Contract addresses
     address public tokenFactory;
@@ -241,6 +241,35 @@ contract RWAOracleCore is ZamaEthereumConfig {
         );
         
         return requestId;
+    }
+    
+    /**
+     * @notice Oracle submits verification result (simple version for off-chain AI oracle)
+     * @dev For the centralized oracle backend - accepts plain values
+     * @param _requestId Request ID
+     * @param _valuation Valuation in USD (wei precision)
+     * @param _confidence Confidence score (0-100)
+     */
+    function submitVerification(
+        uint256 _requestId,
+        uint256 _valuation,
+        uint256 _confidence
+    ) external {
+        VerificationRequest storage request = requests[_requestId];
+        require(request.requestId != 0, "Request does not exist");
+        require(request.status == RequestStatus.PENDING || request.status == RequestStatus.PROCESSING, "Request not pending");
+        require(_valuation > 0, "Valuation must be greater than 0");
+        require(_confidence > 0 && _confidence <= 100, "Confidence must be 0-100");
+        
+        // Mark as verified
+        request.status = RequestStatus.VERIFIED;
+        
+        emit OracleResponseSubmitted(
+            _requestId,
+            msg.sender,
+            bytes32(_valuation),
+            block.timestamp
+        );
     }
     
     /**

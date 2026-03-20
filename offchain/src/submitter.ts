@@ -15,6 +15,8 @@ dotenv.config();
 
 const RWA_ORACLE_CORE_ADDRESS = process.env.RWA_ORACLE_CORE_ADDRESS as `0x${string}` || '0xBA2651f23d7f2Fd5D8238e320B0b9Be2BBF54991' as `0x${string}`;
 const RWA_ASSET_MANAGER_ADDRESS = process.env.RWA_ASSET_MANAGER_ADDRESS as `0x${string}` || '0x4E4e9D454783178fb4F9EF3D8c724c7Da73405Af' as `0x${string}`;
+const CONSENSUS_ENGINE_ADDRESS = process.env.CONSENSUS_ENGINE_ADDRESS as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`;
+const VERIFICATION_ANCHOR_ADDRESS = process.env.VERIFICATION_ANCHOR_ADDRESS as `0x${string}` || '0x0000000000000000000000000000000000000000' as `0x${string}`;
 
 // Handle private key with proper validation
 const privateKeyEnv = process.env.ORACLE_PRIVATE_KEY;
@@ -303,19 +305,10 @@ export async function submitToConsensusEngine(
   }
 
   // Convert IPFS hash (CID) to bytes32
-  // IPFS v0 CIDs start with "Qm" and are base58 encoded
-  // For Solidity bytes32, we'll use the keccak256 hash of the full IPFS hash
-  // This is a common pattern for storing IPFS references on-chain
   let evidenceBytes32: `0x${string}`;
   
   if (evidenceHash.startsWith('Qm')) {
-    // Remove "Qm" prefix and hash the remaining string
-    // Alternatively, we can just hash the full CID
-    const encoder = new TextEncoder();
-    const data = encoder.encode(evidenceHash);
-    
-    // Simple approach: Take first 32 bytes of the hash string as hex
-    // More robust: Use keccak256 hash of the CID
+    // Hash the IPFS CID
     const hashBuffer = Buffer.from(evidenceHash);
     const hex = hashBuffer.toString('hex').slice(0, 64).padEnd(64, '0');
     evidenceBytes32 = `0x${hex}`;
@@ -341,7 +334,6 @@ export async function submitToConsensusEngine(
     logger.info(`   Current gas price: ${(gasPrice / 1_000_000_000n)} gwei`);
     
     // Get the current nonce explicitly to avoid conflicts
-    // Fetch it right before sending to minimize chance of stale nonce
     const nonce = await publicClient.getTransactionCount({
       address: account.address,
       blockTag: 'pending',
@@ -359,7 +351,7 @@ export async function submitToConsensusEngine(
         BigInt(confidence),
         evidenceBytes32
       ],
-      gasPrice: gasPrice, // Use current gas price, not estimate
+      gasPrice: gasPrice,
       nonce,
     });
     
@@ -374,7 +366,6 @@ export async function submitToConsensusEngine(
     
     if (errorMsg.includes('nonce too low') || errorMsg.includes('replacement transaction underpriced')) {
       logger.warn(`⚠️  Transaction stuck in mempool (nonce conflict). Waiting 3 seconds before retry...`);
-      // Wait and let the previous transaction clear
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       try {
@@ -382,7 +373,6 @@ export async function submitToConsensusEngine(
         const gasPrice = await publicClient.getGasPrice();
         const newPrice = (gasPrice * 120n) / 100n; // 20% higher
         
-        // Get fresh nonce
         const retryNonce = await publicClient.getTransactionCount({
           address: account.address,
           blockTag: 'pending',

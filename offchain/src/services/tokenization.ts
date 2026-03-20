@@ -184,15 +184,16 @@ async function deployRWAToken(request: TokenizationRequest, valuationInWei: bigi
     // Convert assetId to BigInt (contract expects uint256)
     // If assetId is numeric, use it directly; otherwise use hash of string
     let assetIdBigInt: bigint;
-    if (/^\d+$/.test(request.assetId)) {
-      assetIdBigInt = BigInt(request.assetId);
+    const assetIdStr = request.assetId.toString();
+    if (/^\d+$/.test(assetIdStr)) {
+      assetIdBigInt = BigInt(assetIdStr);
     } else {
       // Hash the string assetId to create a numeric ID
       // Using a simple hash: sum of character codes
       assetIdBigInt = BigInt(
-        request.assetId
+        assetIdStr
           .split('')
-          .reduce((sum, char) => sum + char.charCodeAt(0), 0)
+          .reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0)
       );
     }
 

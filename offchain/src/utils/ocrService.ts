@@ -12,37 +12,6 @@ dotenv.config();
 const OCR_API_URL = 'https://api.ocr.space/parse/image';
 const OCR_API_KEY = process.env.OCR_SPACE_API_KEY;
 
-interface OCRResult {
-  ParsedResults: Array<{
-    TextOverlay: {
-      Lines: Array<{
-        LineText: string;
-        Words: Array<{
-          WordText: string;
-          Left: number;
-          Top: number;
-          Height: number;
-          Width: number;
-        }>;
-        MaxHeight: number;
-        MinTop: number;
-      }>;
-      HasOverlay: boolean;
-      Message: string;
-    };
-    TextOrientation: string;
-    FileParseExitCode: number;
-    ParsedText: string;
-    ErrorMessage: string;
-    ErrorDetails: string;
-  }>;
-  OCRExitCode: number;
-  IsErroredOnProcessing: boolean;
-  ErrorMessage: string | null;
-  ErrorDetails: string | null;
-  ProcessingTimeInMilliseconds: string;
-}
-
 interface DocumentStructure {
   rawText: string;
   structuredData: {
@@ -89,27 +58,27 @@ export async function convertDocumentToJSON(
   try {
     logger.info(`🔍 Converting document to JSON via OCR.space: ${filename}`);
 
-    // Prepare form data
+    // Prepare form data - SIMPLIFIED for free API tier
     const formData = new FormData();
     formData.append('file', fileBuffer, {
       filename: filename,
-      contentType: filename.toLowerCase().endsWith('.pdf') 
-        ? 'application/pdf' 
+      contentType: filename.toLowerCase().endsWith('.pdf')
+        ? 'application/pdf'
         : 'image/jpeg'
     });
     formData.append('language', 'eng');
     formData.append('apikey', OCR_API_KEY);
-    formData.append('isOverlayRequired', 'true');
-    formData.append('OCREngine', '2'); // Use OCR Engine 2 for better accuracy
-    formData.append('isTable', 'true'); // Detect tables
-    formData.append('scale', 'true'); // Auto-scale for better results
+    // Removed expensive options: isOverlayRequired, isTable, scale
+    // Free tier works better with minimal parameters
 
-    // Send OCR request
-    const response = await axios.post<OCRResult>(OCR_API_URL, formData, {
+    // Send OCR request with reasonable timeout
+    const response = await axios.post(OCR_API_URL, formData, {
       headers: {
         ...formData.getHeaders(),
       },
-      timeout: 60000, // 60 second timeout
+      timeout: 30000, // 30 second timeout (free API is slower)
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
     });
 
     const ocrResult = response.data;
@@ -136,7 +105,7 @@ export async function convertDocumentToJSON(
     const allText: string[] = [];
     const allLines: Array<{ text: string; words: string[] }> = [];
 
-    parsedResults.forEach((result, pageIndex) => {
+    parsedResults.forEach((result: any, pageIndex: number) => {
       const exitCode = result.FileParseExitCode;
 
       switch (exitCode) {
@@ -146,10 +115,10 @@ export async function convertDocumentToJSON(
 
           // Extract structured line and word data
           if (result.TextOverlay && result.TextOverlay.Lines) {
-            result.TextOverlay.Lines.forEach((line) => {
+            result.TextOverlay.Lines.forEach((line: any) => {
               allLines.push({
                 text: line.LineText,
-                words: line.Words.map((w) => w.WordText),
+                words: line.Words.map((w: any) => w.WordText),
               });
             });
           }
@@ -203,7 +172,7 @@ export async function convertDocumentToJSON(
     return documentStructure;
   } catch (error: any) {
     logger.error(`❌ OCR.space API error: ${error.message}`);
-    
+
     // Return error structure instead of throwing
     return {
       rawText: `[OCR ERROR: ${error.message}]`,
@@ -230,7 +199,7 @@ export async function extractTextWithOCR(
 ): Promise<string> {
   try {
     // Check if it's a PDF or image that needs OCR
-    const needsOCR = 
+    const needsOCR =
       contentType === 'application/pdf' ||
       contentType.startsWith('image/') ||
       filename.toLowerCase().match(/\.(pdf|png|jpg|jpeg|tiff|bmp)$/);
@@ -243,7 +212,7 @@ export async function extractTextWithOCR(
     // Use OCR.space API
     const documentStructure = await convertDocumentToJSON(documentBuffer, filename);
 
-    if (documentStructure.rawText.startsWith('[OCR ERROR') || 
+    if (documentStructure.rawText.startsWith('[OCR ERROR') ||
         documentStructure.rawText.startsWith('[OCR API KEY')) {
       logger.warn(`OCR failed for ${filename}, using fallback`);
       return documentStructure.rawText;
@@ -252,7 +221,6 @@ export async function extractTextWithOCR(
     // Return the full raw text for AI analysis
     logger.info(`📄 Extracted ${documentStructure.rawText.length} characters from ${filename} via OCR`);
     return documentStructure.rawText;
-
   } catch (error: any) {
     logger.error(`Error extracting text with OCR: ${error.message}`);
     return `[Error processing document: ${error.message}]`;
