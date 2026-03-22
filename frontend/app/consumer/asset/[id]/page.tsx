@@ -371,7 +371,7 @@ export default function AssetDetails() {
                     {req.valuation > BigInt(0) && (
                       <div>
                         <p className="text-sm text-gray-600 font-mono mb-2">Valuation</p>
-                        <p className="text-2xl font-mono font-bold text-green-600">${(Number(req.valuation) / 1e18).toFixed(2)}</p>
+                        <p className="text-2xl font-mono font-bold text-green-600">${Number(req.valuation).toLocaleString()}</p>
                       </div>
                     )}
                     {req.confidence !== undefined && req.confidence !== null && (
@@ -379,20 +379,20 @@ export default function AssetDetails() {
                         <p className="text-sm text-gray-600 font-mono mb-2">AI Confidence</p>
                         <div className="flex items-center gap-2">
                           <div className="w-32 h-3 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
+                            <div
                               className={`h-full transition-all ${
-                                Number(req.confidence) >= 80 ? 'bg-green-500' :
-                                Number(req.confidence) >= 50 ? 'bg-yellow-500' :
+                                Math.min(100, Number(req.confidence)) >= 80 ? 'bg-green-500' :
+                                Math.min(100, Number(req.confidence)) >= 50 ? 'bg-yellow-500' :
                                 'bg-red-500'
                               }`}
-                              style={{ width: `${req.confidence.toString()}%` }}
+                              style={{ width: `${Math.min(100, Number(req.confidence))}%` }}
                             />
                           </div>
-                          <span className="text-2xl font-mono font-bold min-w-[4ch]">{req.confidence.toString()}%</span>
+                          <span className="text-2xl font-mono font-bold min-w-[4ch]">{Math.min(100, Number(req.confidence))}%</span>
                         </div>
                         <p className="text-xs text-gray-500 font-mono mt-2">
-                          {Number(req.confidence) >= 80 ? '✓ High confidence - Data verified with strong consensus' :
-                           Number(req.confidence) >= 50 ? '⚠ Medium confidence - Review recommended' :
+                          {Math.min(100, Number(req.confidence)) >= 80 ? '✓ High confidence - Data verified with strong consensus' :
+                           Math.min(100, Number(req.confidence)) >= 50 ? '⚠ Medium confidence - Review recommended' :
                            '⚠ Low confidence - Manual verification required'}
                         </p>
                       </div>

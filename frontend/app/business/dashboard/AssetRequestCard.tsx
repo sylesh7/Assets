@@ -246,7 +246,7 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
         {req.valuation > BigInt(0) && (
           <div className="flex justify-between">
             <span className="text-gray-600">Valuation:</span>
-            <span className="font-bold">${(Number(req.valuation) / 1e18).toFixed(2)}</span>
+            <span className="font-bold">${Number(req.valuation).toLocaleString()}</span>
           </div>
         )}
         {req.confidence !== undefined && req.confidence !== null && (
@@ -254,16 +254,16 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
             <span className="text-gray-600">AI Confidence:</span>
             <div className="flex items-center gap-2">
               <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full transition-all ${
-                    Number(req.confidence) >= 80 ? 'bg-green-500' :
-                    Number(req.confidence) >= 50 ? 'bg-yellow-500' :
+                    Math.min(100, Number(req.confidence)) >= 80 ? 'bg-green-500' :
+                    Math.min(100, Number(req.confidence)) >= 50 ? 'bg-yellow-500' :
                     'bg-red-500'
                   }`}
-                  style={{ width: `${req.confidence.toString()}%` }}
+                  style={{ width: `${Math.min(100, Number(req.confidence))}%` }}
                 />
               </div>
-              <span className="font-bold min-w-[3ch] text-right">{req.confidence.toString()}%</span>
+              <span className="font-bold min-w-[3ch] text-right">{Math.min(100, Number(req.confidence))}%</span>
             </div>
           </div>
         )}
@@ -480,7 +480,7 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
                       {req.valuation > BigInt(0) && (
                         <div>
                           <span className="text-sm text-gray-600 font-mono">Blockchain Valuation:</span>
-                          <p className="text-xl font-mono font-bold text-green-600">${(Number(req.valuation) / 1e18).toFixed(2)}</p>
+                          <p className="text-xl font-mono font-bold text-green-600">${Number(req.valuation).toLocaleString()}</p>
                         </div>
                       )}
                       {req.confidence !== undefined && req.confidence !== null && (
@@ -488,20 +488,20 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
                           <span className="text-sm text-gray-600 font-mono block mb-2">AI Analysis Confidence:</span>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden border-2 border-black">
-                              <div 
+                              <div
                                 className={`h-full transition-all ${
-                                  Number(req.confidence) >= 80 ? 'bg-green-500' :
-                                  Number(req.confidence) >= 50 ? 'bg-yellow-500' :
+                                  Math.min(100, Number(req.confidence)) >= 80 ? 'bg-green-500' :
+                                  Math.min(100, Number(req.confidence)) >= 50 ? 'bg-yellow-500' :
                                   'bg-red-500'
                                 }`}
-                                style={{ width: `${req.confidence.toString()}%` }}
+                                style={{ width: `${Math.min(100, Number(req.confidence))}%` }}
                               />
                             </div>
-                            <span className="text-2xl font-mono font-bold min-w-[4ch]">{req.confidence.toString()}%</span>
+                            <span className="text-2xl font-mono font-bold min-w-[4ch]">{Math.min(100, Number(req.confidence))}%</span>
                           </div>
                           <p className="text-xs text-gray-500 font-mono">
-                            {Number(req.confidence) >= 80 ? '✓ High confidence - Data verified with strong consensus' :
-                             Number(req.confidence) >= 50 ? '⚠ Medium confidence - Review recommended' :
+                            {Math.min(100, Number(req.confidence)) >= 80 ? '✓ High confidence - Data verified with strong consensus' :
+                             Math.min(100, Number(req.confidence)) >= 50 ? '⚠ Medium confidence - Review recommended' :
                              '⚠ Low confidence - Manual verification required'}
                           </p>
                         </div>
@@ -807,8 +807,8 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
 
                           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-xs text-blue-800 font-mono">
-                              <strong>ℹ️ Consensus Method:</strong> The final confidence score ({req.confidence.toString()}%) is calculated using 
-                              {evidenceData.agentAnalysis.consensusMethod === 'weighted_average' ? ' weighted averaging' : ' consensus analysis'} across all three agents, 
+                              <strong>ℹ️ Consensus Method:</strong> The final confidence score ({Math.min(100, Number(req.confidence))}%) is calculated using
+                              {evidenceData.agentAnalysis.consensusMethod === 'weighted_average' ? ' weighted averaging' : ' consensus analysis'} across all three agents,
                               with automatic outlier detection and variance analysis.
                             </p>
                           </div>
@@ -824,14 +824,14 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
                               </div>
                               <div className="text-right">
                                 <div className="text-sm text-gray-600 font-mono">Confidence</div>
-                                <div className="text-2xl font-mono font-bold text-blue-600">~{Math.max(75, Number(req.confidence) - 5)}%</div>
+                                <div className="text-2xl font-mono font-bold text-blue-600">~{Math.max(75, Math.min(100, Number(req.confidence)) - 5)}%</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-blue-500"
-                                  style={{ width: `${Math.max(75, Number(req.confidence) - 5)}%` }}
+                                  style={{ width: `${Math.max(75, Math.min(100, Number(req.confidence)) - 5)}%` }}
                                 />
                               </div>
                             </div>
@@ -846,14 +846,14 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
                               </div>
                               <div className="text-right">
                                 <div className="text-sm text-gray-600 font-mono">Confidence</div>
-                                <div className="text-2xl font-mono font-bold text-purple-600">~{Math.min(95, Number(req.confidence) + 5)}%</div>
+                                <div className="text-2xl font-mono font-bold text-purple-600">~{Math.min(95, Math.min(100, Number(req.confidence)) + 5)}%</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-purple-500"
-                                  style={{ width: `${Math.min(95, Number(req.confidence) + 5)}%` }}
+                                  style={{ width: `${Math.min(95, Math.min(100, Number(req.confidence)) + 5)}%` }}
                                 />
                               </div>
                             </div>
@@ -868,14 +868,14 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
                               </div>
                               <div className="text-right">
                                 <div className="text-sm text-gray-600 font-mono">Confidence</div>
-                                <div className="text-2xl font-mono font-bold text-green-600">~{Number(req.confidence)}%</div>
+                                <div className="text-2xl font-mono font-bold text-green-600">~{Math.min(100, Number(req.confidence))}%</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-green-500"
-                                  style={{ width: `${req.confidence.toString()}%` }}
+                                  style={{ width: `${Math.min(100, Number(req.confidence))}%` }}
                                 />
                               </div>
                             </div>
@@ -884,7 +884,7 @@ export default function AssetRequestCard({ requestId }: { requestId: bigint }) {
 
                           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-xs text-blue-800 font-mono">
-                              <strong>ℹ️ Consensus Method:</strong> The final confidence score ({req.confidence.toString()}%) is calculated using 
+                              <strong>ℹ️ Consensus Method:</strong> The final confidence score ({Math.min(100, Number(req.confidence))}%) is calculated using
                               weighted averaging across all three agents, with automatic outlier detection and variance analysis.
                             </p>
                           </div>

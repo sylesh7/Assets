@@ -95,7 +95,7 @@ export default function ConsumerDashboard() {
                 price: Number(request.valuation || 0),
                 confidence: Number(request.confidence || 0),
                 location: request.location || 'Unknown',
-                tokens_available: request.valuation ? Math.floor(Number(request.valuation) / 1e18) : 0,
+                tokens_available: request.valuation ? Number(request.valuation) : 0,
                 owner: request.owner,
                 status: request.status,
               }

@@ -143,7 +143,7 @@ export async function submitRejection(
   try {
     logger.info('🚫 Submitting rejection to blockchain...');
     logger.info(`   Reason: ${reason}`);
-    logger.info(`   Method: submitVerification with $0 valuation and 1% confidence (rejection)`);
+    logger.info(`   Method: submitVerification with $1 valuation and 1% confidence (rejection marker)`);
     
     // Get the current nonce explicitly to avoid conflicts
     const nonce = await publicClient.getTransactionCount({
@@ -161,14 +161,14 @@ export async function submitRejection(
       functionName: 'submitVerification',
       args: [
         BigInt(requestId),
-        BigInt(0),  // 0 valuation = rejection
-        BigInt(1)   // 1% confidence = rejection (minimum allowed by contract)
+        BigInt(1),  // contract requires valuation > 0; 1 signals rejection
+        BigInt(1)   // 1% confidence signals rejection
       ],
       nonce,
     });
     
     logger.info(`✅ Rejection transaction sent: ${hash}`);
-    logger.info(`   The request will show as VERIFIED with $0 value and 1% confidence (rejected)`);
+    logger.info(`   The request will show as VERIFIED with $1 value and 1% confidence (rejected)`);
     return hash;
     
   } catch (error) {
